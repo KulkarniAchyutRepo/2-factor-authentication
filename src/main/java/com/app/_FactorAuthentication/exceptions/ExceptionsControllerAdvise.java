@@ -1,5 +1,10 @@
 package com.app._FactorAuthentication.exceptions;
 
+import com.app._FactorAuthentication.exceptions.authExceptions.InvalidOtpException;
+import com.app._FactorAuthentication.exceptions.authExceptions.InvalidPasswordException;
+import com.app._FactorAuthentication.exceptions.authExceptions.UserAlreadyExistsException;
+import com.app._FactorAuthentication.exceptions.authExceptions.UserNotFoundException;
+import com.app._FactorAuthentication.exceptions.securityExceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,39 +16,40 @@ import java.time.LocalDateTime;
 public class ExceptionsControllerAdvise {
 
     @ExceptionHandler
+    public ResponseEntity<CustomErrorResponse> getErrorResponse(ResourceNotFoundException e){
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
     public ResponseEntity<CustomErrorResponse> getErrorResponse(InvalidOtpException e){
-        CustomErrorResponse errorResponse = new CustomErrorResponse();
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
-        errorResponse.setMessage(e.getMessage());
-        errorResponse.setTimestamp(LocalDateTime.now());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler
     public ResponseEntity<CustomErrorResponse> getErrorResponse(UserAlreadyExistsException e){
-        CustomErrorResponse errorResponse = new CustomErrorResponse();
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
-        errorResponse.setMessage(e.getMessage());
-        errorResponse.setTimestamp(LocalDateTime.now());
-        System.out.println(errorResponse);
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
     public ResponseEntity<CustomErrorResponse> getErrorResponse(UserNotFoundException e){
-        CustomErrorResponse errorResponse = new CustomErrorResponse();
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
-        errorResponse.setMessage(e.getMessage());
-        errorResponse.setTimestamp(LocalDateTime.now());
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<CustomErrorResponse> getErrorResponse(InvalidPasswordException e){
+        return buildErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler
     public ResponseEntity<CustomErrorResponse> getErrorResponse(Exception e) {
         System.out.println("Something went wrong..."+ e);
+        return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private ResponseEntity<CustomErrorResponse> buildErrorResponse(Exception e, HttpStatus status) {
         CustomErrorResponse errorResponse = new CustomErrorResponse();
-        errorResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        errorResponse.setStatus(status.value());
         errorResponse.setMessage(e.getMessage());
         errorResponse.setTimestamp(LocalDateTime.now());
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorResponse, status);
     }
 
 }

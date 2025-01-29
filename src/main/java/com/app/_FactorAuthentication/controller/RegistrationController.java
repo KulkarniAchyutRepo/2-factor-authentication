@@ -16,7 +16,7 @@ public class RegistrationController {
         this.registrationService = registrationService;
     }
 
-    @PostMapping("/register")
+    @PostMapping("/api/v1/register")
     public ResponseEntity<String> register(@RequestParam String email, @RequestParam String name, @RequestParam String password) {
         String response = registrationService.registerUser(email, name, password);
         return ResponseEntity.ok(response);

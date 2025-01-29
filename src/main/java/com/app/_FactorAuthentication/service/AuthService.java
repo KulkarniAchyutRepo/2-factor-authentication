@@ -1,10 +1,14 @@
 package com.app._FactorAuthentication.service;
 import com.app._FactorAuthentication.entity.Otp;
+import com.app._FactorAuthentication.entity.User;
+import com.app._FactorAuthentication.exceptions.authExceptions.InvalidPasswordException;
+import com.app._FactorAuthentication.exceptions.authExceptions.UserNotFoundException;
 import com.app._FactorAuthentication.repository.OtpRepository;
 import com.app._FactorAuthentication.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,20 +31,49 @@ public class AuthService {
         return userRepository.existsByEmail(email);
     }
 
+    public String authenticateViaPassword(String email, String password) {
+        Optional<User> user = userRepository.findByEmail(email);
+
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("Invalid email or password.");
+        }
+
+        // Verify the password using BCrypt
+        if (!BCrypt.checkpw(password, user.get().getPassword())) {
+            throw new InvalidPasswordException("Invalid email or password.");
+        }
+
+        return "User authenticated successfully via password.";
+    }
+
     @Transactional
-    public void generateAndSendOtp(String email) {
+    public String generateAndSendOtp(String email) {
+        // Check if an OTP is already generated and not expired
+        Optional<Otp> existingOtp = otpRepository.findByEmail(email);
+
+        if (existingOtp.isPresent() && existingOtp.get().getExpiryTime().isAfter(LocalDateTime.now())) {
+            return "OTP has already been sent to your email.";
+        }
+
+        // Generate a new OTP if no valid OTP exists
         String otp = String.valueOf(new Random().nextInt(900000) + 100000);
 
+        // Delete any existing stale OTP for the email
         otpRepository.deleteByEmail(email);
 
+        // Create and save the new OTP
         Otp otpEntity = new Otp();
         otpEntity.setEmail(email);
         otpEntity.setOtp(otp);
         otpEntity.setExpiryTime(LocalDateTime.now().plusMinutes(OTP_VALIDITY_MINUTES));
         otpRepository.save(otpEntity);
 
+        // Send the OTP to the user's email
         emailService.sendOtpEmail(email, otp);
+
+        return "OTP has been sent to your email.";
     }
+
     @Transactional
     public boolean verifyOtp(String email, String otp) {
         Optional<Otp> storedOtp = otpRepository.findByEmailAndOtp(email, otp);

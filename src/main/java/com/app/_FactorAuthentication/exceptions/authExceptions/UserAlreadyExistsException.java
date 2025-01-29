@@ -1,4 +1,4 @@
-package com.app._FactorAuthentication.exceptions;
+package com.app._FactorAuthentication.exceptions.authExceptions;
 
 public class UserAlreadyExistsException extends RuntimeException {
     public UserAlreadyExistsException(String message) {

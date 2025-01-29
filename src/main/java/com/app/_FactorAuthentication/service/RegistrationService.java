@@ -1,6 +1,6 @@
 package com.app._FactorAuthentication.service;
 import com.app._FactorAuthentication.entity.User;
-import com.app._FactorAuthentication.exceptions.UserAlreadyExistsException;
+import com.app._FactorAuthentication.exceptions.authExceptions.UserAlreadyExistsException;
 import com.app._FactorAuthentication.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
