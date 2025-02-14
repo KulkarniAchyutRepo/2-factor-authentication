@@ -29,10 +29,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
-                        auth-> auth.requestMatchers(HttpMethod.GET, "/api/v1").permitAll()
+                        auth-> auth
+//                                .requestMatchers(HttpMethod.GET, "/api/v1").permitAll()
                                     .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-                                    .requestMatchers(HttpMethod.POST, "/api/v1/register").authenticated()
-                                    .requestMatchers("/api/v1/**").authenticated()
+                                    .requestMatchers(HttpMethod.POST, "/api/v1/register").permitAll()
+                                    .requestMatchers("/api/v1/users/**").authenticated()
                                     .anyRequest().permitAll()
                 )
                 .exceptionHandling(exception->exception.authenticationEntryPoint(customAuthenticationEntryPoint))
